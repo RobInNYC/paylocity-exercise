@@ -3,6 +3,7 @@ let employeeList = [
 		id: 1
 		, fname: "John"
 		, dependents: []
+		, enrolledInBenefits: false
 	}
 	, {
 		id: 2
@@ -11,6 +12,7 @@ let employeeList = [
 			"Alice"
 			, "Jane"
 		]
+		, enrolledInBenefits: true
 	}
 ];
 
@@ -54,12 +56,15 @@ export const saveEmployee = (employee) => {
 		return e.id === employee.id;
 	});
 	if (! foundEmployee) {
-		foundEmployee = EMPTY_EMPLOYEE;
+		foundEmployee = Object.assign({}, EMPTY_EMPLOYEE);
 		foundEmployee.id = employeeList.length + 1;
 		employeeList.push(foundEmployee);
 	}
 	foundEmployee.fname = employee.fname;
-	foundEmployee.dependents = employee.dependents;
+	foundEmployee.dependents = [...employee.dependents];
+	foundEmployee.enrolledInBenefits = employee.enrolledInBenefits;
+
+	console.log(employeeList);
 
 	notifyChanges();
 }
@@ -75,22 +80,13 @@ export const getEmployeeCost = (employeeId) => {
 	const foundEmployee = employeeList.find((employee) => {
 		return employee.id === employeeId;
 	});
-	let totalCost = getCostByName(foundEmployee.fname, 1000);
-	foundEmployee.dependents.forEach((dependent) => {
-		totalCost += getCostByName(dependent, 500);
-	});
 
+	let totalCost = getEmployeeProjectedCost(foundEmployee);
 	return totalCost;
 }
 
 export const getEmployeeCostPerPeriod = (employeeId) => {
-	const foundEmployee = employeeList.find((employee) => {
-		return employee.id === employeeId;
-	});
-	let totalCost = getCostByName(foundEmployee.fname, 1000);
-	foundEmployee.dependents.forEach((dependent) => {
-		totalCost += getCostByName(dependent, 500);
-	});
+	let totalCost = getEmployeeCost(employeeId);
 
 	return Math.floor((totalCost / TOTAL_PAY_PERIODS_PER_YEAR) * 100) / 100;
 }
@@ -104,6 +100,10 @@ export const getEmployeeNetPayPerPeriod = (employeeId) => {
 }
 
 export const getEmployeeProjectedCost = (employeeData) => {
+	if (employeeData.enrolledInBenefits === false) {
+		return 0;
+	}
+
 	let totalCost = getCostByName(employeeData.fname, 1000);
 	employeeData.dependents?.forEach((dependent) => {
 		totalCost += getCostByName(dependent, 500);

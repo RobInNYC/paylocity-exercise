@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import ReactDOM from 'react-dom/client';
 import { 
 		getEmployees
-		, addEmployee
 		, subscribeToChanges
 		, getEmployeeCost
 		, getEmployeeCostPerPeriod 
@@ -40,8 +38,8 @@ export function EmployeeList(props) {
 					<tbody>
 						{employees.map((employee, idx) => {
 							return (
-								<React.Fragment>
-								<tr key={ idx }>
+								<React.Fragment key={ idx }>
+								<tr >
 									<td>
 										<button onClick={ (() => { editEmployee(employee.id) })}>Edit</button>
 									</td>
@@ -55,7 +53,14 @@ export function EmployeeList(props) {
 									<td colSpan="2">
 									</td>
 									<td>
-										({ employee.dependents.length === 0 ? 'No ' : '' }Dependents{ employee.dependents.length !== 0 ? ': ' + employee.dependents.join(', ') : '' })
+										({ employee.dependents?.length === 0 ? 'No ' : '' }Dependents{ employee.dependents?.length !== 0 ? ': ' + employee.dependents?.join(', ') : '' })
+									</td>
+								</tr>
+								<tr>
+									<td colSpan="2">
+									</td>
+									<td>
+										({ employee.enrolledInBenefits === false ? 'NOT ' : '' }Enrolled in Benefits)
 									</td>
 								</tr>
 								<tr>

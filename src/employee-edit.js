@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import ReactDOM from 'react-dom/client';
-import { getEmployees, addEmployee, saveEmployee, getEmployeeProjectedCost } from './employee-api.js';
+import { getEmployees, saveEmployee, getEmployeeProjectedCost } from './employee-api.js';
 
+import './employee-list.css';
 
 
 export function EmployeeEdit(props) {
 	const [ fname, setFname ] = useState("");
+	const [ isEnrolled, setIsEnrolled ] = useState(false);
 	const [ employeeToEdit, setEmployeeToEdit ] = useState(props.id);
 	const [ employeeData, setEmployeeData ] = useState({});
 
@@ -24,7 +25,9 @@ export function EmployeeEdit(props) {
 	const handleSaveButtonClick = () => {
 		const employeeToSave = {
 			...employeeData
+			, dependents: employeeData.dependents ? [...employeeData.dependents] : []
 			, fname: fname
+			, enrolledInBenefits: isEnrolled
 			, id: props.id
 		};
 		saveEmployee(employeeToSave);
@@ -33,12 +36,25 @@ export function EmployeeEdit(props) {
 			fname: ''
 			, dependents: []
 			, id: 0
+			, enrolledInBenefits: false
 		});
 		props.editCompleteCallback();
 	};
 
 	const handleTextChange = (event) => {
 		setFname(event.target.value);
+		setEmployeeData({
+			...employeeData
+			, fname: event.target.value
+		});
+	}
+
+	const handleEnrolledClick = () => {
+		setIsEnrolled(! isEnrolled);
+		setEmployeeData({
+			...employeeData
+			, enrolledInBenefits: (! isEnrolled)
+		});
 	}
 
 	useEffect(() => {
@@ -49,12 +65,14 @@ export function EmployeeEdit(props) {
 		if (foundEmployee) {
 			setEmployeeData(foundEmployee);
 			setFname(foundEmployee.fname);
+			console.log(`foundEmployee.enrolledInBenefits: ${ foundEmployee.enrolledInBenefits }`);
+			setIsEnrolled(foundEmployee.enrolledInBenefits);
 		}
-	}, [props.id]);
+	}, [ props.id ]);
 
 	const changeDependentName = (event) => {
 		const newDependents = [...employeeData.dependents];
-		newDependents[event.target.getAttribute("dIdx")] = event.target.value;
+		newDependents[event.target.getAttribute("didx")] = event.target.value;
 		setEmployeeData({
 			...employeeData
 			, dependents: newDependents
@@ -63,7 +81,7 @@ export function EmployeeEdit(props) {
 
 	const removeDependent = (event) => {
 		const newDependents = [...employeeData.dependents];
-		newDependents.splice(event.target.getAttribute("dIdx"), 1);
+		newDependents.splice(event.target.getAttribute("didx"), 1);
 		setEmployeeData({
 			...employeeData
 			, dependents: newDependents
@@ -80,13 +98,19 @@ export function EmployeeEdit(props) {
 	}
 
 	return (
-		<div>
+		<div className="employee-edit">
 			<h1>Employee Edit: { employeeToEdit }</h1>
 			<table>
 				<tbody>
 					<tr>
 						<td>First Name</td>
 						<td><input type="text" value={ fname } onChange={ handleTextChange } /></td>
+					</tr>
+					<tr>
+						<td>Enrolled in Benefits</td>
+						<td>
+							<input type="checkbox" checked={ isEnrolled } onChange={ handleEnrolledClick } />
+						</td>
 					</tr>
 					{
 						employeeData.dependents?.length > 0 &&
@@ -96,8 +120,8 @@ export function EmployeeEdit(props) {
 								<ul>
 									{ employeeData.dependents.map((dependent, idx) => {
 										return (<li key={ idx }>
-											<input dIdx={ idx } value={ dependent } type="text" onChange={ changeDependentName } />
-											<button dIdx={ idx } onClick={ removeDependent }>Remove</button>
+											<input didx={ idx } value={ dependent } type="text" onChange={ changeDependentName } />
+											<button didx={ idx } onClick={ removeDependent }>Remove</button>
 										</li>)
 									})}
 								</ul>

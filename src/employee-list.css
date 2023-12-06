@@ -1,3 +1,8 @@
+.employee-list {
+	height: 70vh;
+	overflow: auto;
+}
+
 .list-header {
 	text-align: center;
 }
